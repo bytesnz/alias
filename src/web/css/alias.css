@@ -1,0 +1,65 @@
+html,
+body {
+  background: #ccc;
+  min-height: 100%;
+  padding: 0px;
+}
+* {
+  box-sizing: border-box;
+}
+header,
+main {
+  max-width: 900px;
+  margin: 10px auto;
+  background: #fff;
+  color: #333;
+  padding: 10px 30px;
+  /*visibility: collapse;
+  visibility: visible;*/
+}
+footer {
+  text-align: right;
+  position: fixed;
+  z-index: 100;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  font-size: 0.6em;
+  padding: 10px 40px;
+  background: #eee;
+}
+@media (min-width: 800px) {
+  div.list {
+    display: table;
+  }
+  div.list > div {
+    display: table-row;
+  }
+  div.list > div.notin {
+    display: none;
+  }
+  div.list > div.changed {
+    background: #ffe;
+  }
+  div.list > div > div,
+  div.list > div > label {
+    display: table-cell;
+  }
+  div.list > div > label {
+    visibility: collapse;
+  }
+  div.list > div > label > * {
+    visibility: visible;
+  }
+  div.list > div > label input:invalid {
+    border: solid 1px #FF0000;
+  }
+  div.list > div.header:only-child {
+    display: none;
+  }
+}
+@media (max-width: 800px) {
+  div.header {
+    display: none;
+  }
+}
