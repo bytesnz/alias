@@ -1,0 +1,14 @@
+*~
+node_modules
+.*.sw?
+build
+reports
+debug
+out
+npm-debug.log*
+.coveralls.yml
+.coverdata
+.coverrun
+coverage
+save
+test*
