@@ -210,6 +210,7 @@ function reloadAliases(socket, data) {
 
     socket.emit('result', data);
   }).catch(function(err) {
+    console.error(err.stack);
     socket.emit('result', {
       error: err.message,
       reference: (typeof data === 'object' && data.reference
@@ -236,7 +237,6 @@ function reload(redoAliases, redoBlocked) {
   
   // Get all the aliases
   return aliasDB.read().then(function(results) {
-    console.log('get results', results);
     let rejectContents = [],
         aliasContents = [],
         r,
@@ -338,6 +338,7 @@ function clientInitialise(socket, data) {
 
     socket.emit('initialise', data);
   }).catch(function(err) {
+    console.error(err.stack);
     socket.emit('initialise', {
       error: err.message,
       reference: (typeof data === 'object' && data.reference
@@ -374,7 +375,6 @@ module.exports = function initAlias(io, config) {
       id: 'alias'
     });
   }).then(function aliasDbSuccess(db) {
-    console.log('got a db', db);
     aliasDB = db;
 
     // Set up socket stuff
@@ -387,7 +387,7 @@ module.exports = function initAlias(io, config) {
     });
 
     return Promise.resolve({
-      reload: reloadAliases.bind(this, undefined, undefined)
+      reload: reload.bind(this, undefined, undefined)
     });
   });
 };

@@ -21,7 +21,7 @@
 
 (function() {
   // Set up socket
-  var socket = io();
+  var socket = io.connect({});
 
   var references = {};
   var nextReferenceId = 1;
@@ -173,10 +173,11 @@
    * Draw a new row
    *
    * @param {Object} data Initial data for the new row
+   * @param {Boolean} scrollToView If true, scroll new row into view
    *
    * @returns {undefined}
    */
-  function newRow(data) {
+  function newRow(data, scrollToView) {
     var f,
         label, field;
     if (!list) {
@@ -507,6 +508,7 @@
    * @returns {undefined}
    */
   function handleData(callback, data) {
+    console.log('received data', data);
     var reference;
     // Check for an error
     if (data.error) {
