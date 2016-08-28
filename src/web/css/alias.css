@@ -39,6 +39,9 @@ main {
   /*visibility: collapse;
   visibility: visible;*/
 }
+.hidden {
+  display: none;
+}
 div.buttons {
   padding: 10px 0px;
 }

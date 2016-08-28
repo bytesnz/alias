@@ -170,6 +170,22 @@
   }
 
   /**
+   * Attempts to copy the alias to the clipboard
+   *
+   * @param {HTMLDomElement} input Input to copy from
+   *
+   * @returns {undefined}
+   */
+  function copyAlias(input) {
+    input.select();
+    try {
+      document.execCommand('copy');
+    } catch (err) {
+      alert('Failed to execute copy command');
+    }
+  }
+
+  /**
    * Draw a new row
    *
    * @param {Object} data Initial data for the new row
@@ -232,7 +248,12 @@
 
       // Add a random button if no value for the alias
       if (f === 'alias') {
+        label.appendChild((row.copy = document.createElement('button')));
+        row.copy.textContent = 'Copy';
+        row.copy.addEventListener('click',
+            copyAlias.bind(this, row.alias));
         if (!data[f]) {
+          row.copy.className = 'hidden';
           label.appendChild((row.random = document.createElement('button')));
           row.random.textContent = 'Random';
           row.random.addEventListener('click',
@@ -449,6 +470,7 @@
   function search(searchField) {
     var searchValue = searchField.value;
     var searchRegex;
+
 
     // Try creating a regular expression
     try {
@@ -695,6 +717,11 @@
             delete rows[alias.id].unsaved;
             rows[alias.id].row.classList.toggle('changed', false);
             rows[alias.id].alias.readOnly = true;
+            rows[alias.id].copy.className = '';
+            if (rows[alias.id].random) {
+              rows[alias.id].random.parentNode.removeChild(rows[alias.id].random);
+              delete rows[alias.id].random;
+            }
           }
         });
         if (typeof data.result === 'string') {
@@ -709,7 +736,7 @@
         if (rows[reference.id]) {
           list.removeChild(rows[reference.id].row);
         }
-        updateStatus('Alias ' + reference.alias + ' removed');
+        updateStatus('Alias ' + reference.filter + ' removed');
         break;
       case 'reload':
         printRows(data.result);
@@ -747,7 +774,7 @@
    * @returns {undefined}
    */
   function createButtons(element) {
-    var button;
+    var button, input;
     
     element.appendChild((button = document.createElement('button')));
     button.textContent = 'Reload Postfix';
@@ -765,12 +792,18 @@
     button.textContent = 'Save All';
     button.addEventListener('click', saveAll.bind(this));
 
-    element.appendChild((button = document.createElement('input')));
-    button.setAttribute('type', 'search');
-    button.setAttribute('placeholder', 'Alias Search');
-    //button.addEventListener('input', search.bind(this, button));
-    button.addEventListener('keyup', search.bind(this, button));
-    searchFields.push(button);
+    element.appendChild((input = document.createElement('input')));
+    input.setAttribute('type', 'search');
+    input.setAttribute('placeholder', 'Alias Search');
+    //input.addEventListener('input', search.bind(this, input));
+    input.addEventListener('keyup', search.bind(this, input));
+    searchFields.push(input);
+    element.appendChild((button = document.createElement('button')));
+    button.textContent = 'X';
+    button.addEventListener('click', function() {
+      input.value = '';
+      search.call(this, input);
+    }.bind(this));
   }
 
   // Add hook for UI
