@@ -191,6 +191,7 @@
 
     if (typeof data === 'undefined') {
       row.changed = true;
+      row.unsaved = true;
       data = {};
     }
 
@@ -230,11 +231,15 @@
       }
 
       // Add a random button if no value for the alias
-      if (!data[f] && f === 'alias') {
-        label.appendChild((row.random = document.createElement('button')));
-        row.random.textContent = 'Random';
-        row.random.addEventListener('click',
-            makeRandomAlias.bind(this, row.alias));
+      if (f === 'alias') {
+        if (!data[f]) {
+          label.appendChild((row.random = document.createElement('button')));
+          row.random.textContent = 'Random';
+          row.random.addEventListener('click',
+              makeRandomAlias.bind(this, row.alias));
+        } else {
+          row[f].readOnly = true;
+        }
       }
 
       // Add changed event checker
@@ -254,6 +259,10 @@
     label.appendChild((field = document.createElement('button')));
     field.textContent = 'Delete';
     field.addEventListener('click', deleteRow.bind(this, row));
+
+    if (row.unsaved) {
+      window.scrollTo(0,document.body.scrollHeight);
+    }
 
     return id;
   }
@@ -352,6 +361,27 @@
    * @returns {undefined}
    */
   function deleteRow(row) {
+    // Check values require
+    var errors = '';
+
+    if (row.unsaved) {
+      // Just delete the unsaved row
+      list.removeChild(row.row);
+      updateStatus('Alias ' + row.alias.value + ' removed');
+    } else {
+      //Build data to send to server
+      var id = nextReferenceId++;
+      references[id] = {
+        reference: id,
+        time: new Date(),
+        type: 'delete',
+        id: row.id,
+        filter: row.alias.value
+      };
+
+      socket.emit('aliases:delete', references[id]);
+      updateStatus('Deleting alias ' + row.alias.value);
+    }
   }
 
   /**
@@ -476,6 +506,16 @@
    * @returns {undefined}
    */
   function reloadPostfix() {
+    //Build data to send to server
+    var id = nextReferenceId++;
+    references[id] = {
+      reference: id,
+      time: new Date(),
+      type: 'postfix'
+    };
+
+    socket.emit('aliases:postfix', references[id]);
+    updateStatus('Reloading Postfix');
   }
 
   /**@internal
@@ -652,7 +692,9 @@
           if (rows[alias.id]
               && rows[alias.id].changed) {
             delete rows[alias.id].changed;
+            delete rows[alias.id].unsaved;
             rows[alias.id].row.classList.toggle('changed', false);
+            rows[alias.id].alias.readOnly = true;
           }
         });
         if (typeof data.result === 'string') {
@@ -664,12 +706,17 @@
         }
         break;
       case 'delete':
-        list.removeChild(reference.row);
+        if (rows[reference.id]) {
+          list.removeChild(rows[reference.id].row);
+        }
         updateStatus('Alias ' + reference.alias + ' removed');
         break;
       case 'reload':
         printRows(data.result);
         updateStatus('Aliases reload');
+        break;
+      case 'postfix':
+        updateStatus('Postfix reloaded');
         break;
     }
   }));
@@ -721,7 +768,8 @@
     element.appendChild((button = document.createElement('input')));
     button.setAttribute('type', 'search');
     button.setAttribute('placeholder', 'Alias Search');
-    button.addEventListener('input', search.bind(this, button));
+    //button.addEventListener('input', search.bind(this, button));
+    button.addEventListener('keyup', search.bind(this, button));
     searchFields.push(button);
   }
 
@@ -737,6 +785,7 @@
     
     // Create button rows
     main.appendChild((row = document.createElement('div')));
+    row.className = 'buttons';
     createButtons(row);
 
     // Create list
@@ -754,6 +803,7 @@
 
     // Create button rows
     main.appendChild((row = document.createElement('div')));
+    row.className = 'buttons';
     createButtons(row);
   });
 })();

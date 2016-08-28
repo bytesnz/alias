@@ -50,7 +50,7 @@ let aliasDB;
  */
 function aliasOperation(socket, operation, data) {
   // Create the new alias
-  aliasDB[operation](data).then(function(result) {
+  aliasDB[operation](data.filter).then(function(result) {
     socket.emit('result', {
       reference: data.reference,
       result: result
@@ -190,7 +190,7 @@ function saveAlias(socket, data) {
  * (`.message`).
  *
  * @param {Socket} socket Socket.io client socket
- * @param {Object} data Data to use to carry out operation
+ * @param {Object} data Data to used to carry out operation
  * @param {String|Number} data.reference Reference number of socket message
  *
  * @returns {undefined}
@@ -220,6 +220,31 @@ function reloadAliases(socket, data) {
 }
 
 /**@internal
+ * Reloads the aliases and the block list. Emits a result message with an 
+ * Object containing the given reference (`.reference`) and if it failed,
+ * an error message (`.message`).
+ *
+ * @param {Socket} socket Socket.io client socket
+ * @param {Object} data Reference data
+ *
+ *
+ * @returns {undefined}
+ */
+function reloadPostfix(socket, data) {
+  // Get initial data
+  return reload(true, true).then(function() {
+    socket.emit('result', data);
+  }).catch(function(err) {
+    console.error(err.stack);
+    socket.emit('result', {
+      error: err.message,
+      reference: (typeof data === 'object' && data.reference
+          ? data.reference : undefined)
+    });
+  });
+}
+
+/**@internal
  * Reload the aliases
  *
  * @param {Boolean} [redoAliases=true] Whether or not to rewrite the aliases
@@ -237,6 +262,7 @@ function reload(redoAliases, redoBlocked) {
   
   // Get all the aliases
   return aliasDB.read().then(function(results) {
+    console.log('get results', results);
     let rejectContents = [],
         aliasContents = [],
         r,
@@ -375,6 +401,7 @@ module.exports = function initAlias(io, config) {
       id: 'alias'
     });
   }).then(function aliasDbSuccess(db) {
+    console.log('got a db', db);
     aliasDB = db;
 
     // Set up socket stuff
@@ -384,6 +411,7 @@ module.exports = function initAlias(io, config) {
      socket.on('aliases:read', aliasOperation.bind(this, socket, 'read'));
      socket.on('aliases:delete', aliasOperation.bind(this, socket, 'delete'));
      socket.on('aliases:reload', reloadAliases.bind(this, socket));
+     socket.on('aliases:postfix', reloadPostfix.bind(this, socket));
     });
 
     return Promise.resolve({

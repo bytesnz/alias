@@ -23,6 +23,10 @@ html, body {
   padding: 0px;
 }
 
+body {
+  margin-bottom: 40px;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -36,6 +40,30 @@ header, main {
 
   /*visibility: collapse;
   visibility: visible;*/
+}
+
+div.buttons {
+  padding: 10px 0px;
+}
+
+div.list {
+  > div {
+    &.changed {
+      background-color: #ffe;
+    }
+
+    &.notin {
+      display: none;
+    }
+
+    input {
+      margin: 0px 5px;
+
+      &:invalid {
+        border: solid 1px #f00;
+      }
+    }
+  }
 }
 
 footer {
@@ -56,14 +84,6 @@ footer {
 
     > div {
       display: table-row;
-      
-      &.notin {
-        display: none;
-      }
-
-      &.changed {
-        background: #ffe;
-      }
 
       > div, > label {
         display: table-cell;
@@ -74,10 +94,6 @@ footer {
 
         > * {
           visibility: visible;
-        }
-
-        input:invalid {
-          border: solid 1px #FF0000;
         }
       }
     }
@@ -91,5 +107,11 @@ footer {
 @media (max-width: 800px) {
   div.header {
     display: none;
+  }
+  div.list > div {
+    margin-bottom: 20px;
+  }
+  div.list label {
+    display: block;
   }
 }
