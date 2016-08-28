@@ -262,7 +262,6 @@ function reload(redoAliases, redoBlocked) {
   
   // Get all the aliases
   return aliasDB.read().then(function(results) {
-    console.log('get results', results);
     let rejectContents = [],
         aliasContents = [],
         r,
@@ -401,7 +400,6 @@ module.exports = function initAlias(io, config) {
       id: 'alias'
     });
   }).then(function aliasDbSuccess(db) {
-    console.log('got a db', db);
     aliasDB = db;
 
     // Set up socket stuff
